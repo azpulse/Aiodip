@@ -1,0 +1,35 @@
+# Optional workflow file.
+# Minimum required in Codemagic UI:
+# 1) Environment variables:
+#      SUPABASE_URL = https://yunchmrhnfozopfeepuh.supabase.co
+#      SUPABASE_ANON_KEY = your eyJ... anon key (Secure)
+# 2) Flutter build arguments (Android + iOS):
+#      --dart-define=SUPABASE_URL=$SUPABASE_URL --dart-define=SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY
+#
+# If you already have a working Codemagic workflow in the UI, keep it and only add
+# the two env vars + the dart-define build arguments above.
+
+workflows:
+  flutter-release:
+    name: Flutter release (Supabase)
+    max_build_duration: 120
+    instance_type: mac_mini_m2
+    environment:
+      flutter: stable
+    scripts:
+      - name: Flutter pub get
+        script: flutter pub get
+      - name: Build Android
+        script: |
+          flutter build appbundle --release \
+            --dart-define=SUPABASE_URL="$SUPABASE_URL" \
+            --dart-define=SUPABASE_ANON_KEY="$SUPABASE_ANON_KEY"
+      - name: Build iOS
+        script: |
+          # Uses Codemagic code signing you already configured in the UI / teams.
+          flutter build ipa --release \
+            --dart-define=SUPABASE_URL="$SUPABASE_URL" \
+            --dart-define=SUPABASE_ANON_KEY="$SUPABASE_ANON_KEY"
+    artifacts:
+      - build/**/outputs/**/*.aab
+      - build/ios/ipa/*.ipa
